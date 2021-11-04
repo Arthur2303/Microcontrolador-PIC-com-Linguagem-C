@@ -1,0 +1,367 @@
+CCS PCD C Compiler, Version 5.105Pd, 1               28-out-21 10:01
+Compiler operating in Evaluation Mode
+To obtain a fully enabled compiler visit www.ccsinfo.com/products
+
+               Filename:   C:\Users\arthu\OneDrive\Documentos\CCS C Projects\Examples\ex_dma_pingpong.lst
+
+               ROM used:   884 bytes (1%)
+                           Largest free fragment is 64652
+               RAM used:   532 (3%) at main() level
+                           737 (4%) worst case
+               Stack used: 46 locations (4 in main + 42 for interrupts)
+               Stack size: 128
+
+*
+00000:  GOTO    2E0
+*
+0001A:  DATA    84,02,00
+0001C:  DATA    3E,02,00
+.................... /////////////////////////////////////////////////////////////////////////
+.................... ////                    EX_DMA_PING_PONG.C                           ////
+.................... ////                                                                 ////
+.................... ////  This program reads 100 A/D samples captured from channel       ////
+.................... ////  AN8 and stores them in DMA RAM. The next set of 1000 samples   ////
+.................... ////  that are read are  transferred to a seperate data buffer.      ////
+.................... ////  The DMA is setup in Ping Pong mode in which it will alternate  ////
+.................... ////  between two buffers to fill in data read from the ADC channel  ////
+.................... ////  The user can process data in buffer 1 while the second buffer  ////
+.................... ////  is getting filled up. The second buffer can then be processed  ////
+.................... ////  as the first gets filled up.                                   ////
+.................... ////                                                                 ////
+.................... ////  The code is setup to read data from ADC channel 8. A timer     ////
+.................... ////  interrupt is called every 1 ms which triggers a conversion.    ////
+.................... ////  At the end of every conversion, the DMA transfer takes place   ////
+.................... ////  The DMA count register is set to 100 using the dma_start()     ////
+.................... ////  function call which uses the sizeof buffer to set the count    ////
+.................... ////  When 'count' number of conversions and transfers are complete  ////
+.................... ////  the DMA interrupt gets triggered. The user can toggle between  ////
+.................... ////  these two buffers by toggling the                              ////
+.................... ////                                                                 ////
+.................... ////  Configure the CCS prototype card as follows for PCD:           ////
+.................... ////     Use the POT labeled AN8.                                    ////
+.................... ////                                                                 ////
+.................... ////  Select either the ICD or your own RS232-to-PC connection       ////
+.................... ////  for the text I/O.                                              ////
+.................... ////                                                                 ////
+.................... ////  This example will work with the PCD compiler.                  ////
+.................... ////  Change the device, clock and  RS232 pins for your hardware     ////
+.................... ////  if needed.                                                     ////
+.................... /////////////////////////////////////////////////////////////////////////
+.................... ////     (C) Copyright 1996,2009,2018 Custom Computer Services       ////
+.................... //// This source code may only be used by licensed users of the CCS  ////
+.................... //// C compiler.  This source code may only be distributed to other  ////
+.................... //// licensed users of the CCS C compiler.  No other use,            ////
+.................... //// reproduction or distribution is permitted without written       ////
+.................... //// permission.  Derivative programs created using this software    ////
+.................... //// in object code form are not restricted in any way.              ////
+.................... /////////////////////////////////////////////////////////////////////////
+.................... 
+.................... #if !defined(__PCD__)
+.................... #error This example only compiles with PCD compiler
+.................... #endif
+.................... 
+.................... #include <33FJ128GP706.h>
+.................... //////////// Standard Header file for the DSPIC33FJ128GP706 device ////////////////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... ////        (C) Copyright 1996, 2020 Custom Computer Services          ////
+.................... //// This source code may only be used by licensed users of the CCS C  ////
+.................... //// compiler.  This source code may only be distributed to other      ////
+.................... //// licensed users of the CCS C compiler.  No other use, reproduction ////
+.................... //// or distribution is permitted without written permission.          ////
+.................... //// Derivative programs created using this software in object code    ////
+.................... //// form are not restricted in any way.                               ////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... #device DSPIC33FJ128GP706
+*
+00200:  CLR     32
+00202:  MOV     #20C,W3
+00204:  ADD     W3,W0,W0
+00206:  TBLRDL.B[W0],W0L
+00208:  CLR.B   1
+0020A:  RETURN  
+0020C:  DATA    0A,0D,00
+0020E:  DATA    53,61,00
+00210:  DATA    6D,70,00
+00212:  DATA    6C,69,00
+00214:  DATA    6E,67,00
+00216:  DATA    3A,00,00
+.................... 
+.................... #list
+.................... 
+.................... #device ADC=16
+.................... #use delay( crystal=20mhz )
+*
+002AC:  CP0     W0
+002AE:  BTSC.B  42.1
+002B0:  BRA     2BA
+002B2:  REPEAT  #270B
+002B4:  NOP     
+002B6:  DEC     W0,W0
+002B8:  BRA     NZ,2B2
+002BA:  RETURN  
+.................... #use rs232(icd)                //Text through the ICD
+002BC:  BCLR.B  2C6.7
+002BE:  BCLR.B  2CA.7
+002C0:  MOV     #8,W3
+002C2:  REPEAT  #100
+002C4:  NOP     
+002C6:  RRC.B   804
+002C8:  BTSC.B  42.0
+002CA:  BSET.B  2CA.7
+002CC:  BTSS.B  42.0
+002CE:  BCLR.B  2CA.7
+002D0:  REPEAT  #FB
+002D2:  NOP     
+002D4:  DEC     W3,W3
+002D6:  BRA     NZ,2C6
+002D8:  BSET.B  2CA.7
+002DA:  REPEAT  #102
+002DC:  NOP     
+002DE:  RETURN  
+.................... //#use rs232(baud=9600, UART2) //Text through the UART
+.................... 
+.................... 
+.................... void ProcessInput(unsigned int *);
+.................... 
+.................... BOOLEAN DMA_Buffer; // Flag to test if DMA interupt has been serviced.
+.................... 
+.................... #define BUFFER_SIZE 100  //DMA BUFFER Size
+.................... 
+.................... /*The BANK_DMA directive will place the following variable, array or
+....................      structure in the DMA RAM*/     
+.................... #BANK_DMA
+.................... unsigned int DMA_BUFFER_A[BUFFER_SIZE];
+.................... #BANK_DMA
+.................... unsigned int DMA_BUFFER_B[BUFFER_SIZE];
+....................    
+.................... #INT_DMA0
+.................... void DMA0_ISR(void)
+*
+0023E:  PUSH    42
+00240:  PUSH    36
+00242:  PUSH    32
+00244:  MOV     W0,[W15++]
+00246:  MOV     #2,W0
+00248:  REPEAT  #C
+0024A:  MOV     [W0++],[W15++]
+.................... {
+....................    
+....................    if(DMA_Buffer)
+0024C:  BTSS.B  800.0
+0024E:  BRA     25C
+....................       ProcessInput(&DMA_BUFFER_A[0]);
+00250:  MOV     #4000,W4
+00252:  MOV     W4,806
+00254:  CALL    218
+00258:  GOTO    264
+....................    else
+....................       ProcessInput(&DMA_BUFFER_B[0]);
+0025C:  MOV     #40C8,W4
+0025E:  MOV     W4,806
+00260:  CALL    218
+....................       
+....................       DMA_Buffer ^=1; // Toggle between buffers     
+00264:  CLR     W0
+00266:  BTSC.B  800.0
+00268:  INC     W0,W0
+0026A:  BTG     W0.0
+0026C:  BCLR.B  800.0
+0026E:  BTSC.B  0.0
+00270:  BSET.B  800.0
+.................... }   
+.................... 
+00272:  BCLR.B  84.4
+00274:  MOV     #1A,W0
+00276:  REPEAT  #C
+00278:  MOV     [--W15],[W0--]
+0027A:  MOV     [--W15],W0
+0027C:  POP     32
+0027E:  POP     36
+00280:  POP     42
+00282:  RETFIE  
+.................... #int_timer1                          
+.................... void Timer_ISR()
+00284:  PUSH    42
+00286:  PUSH    36
+00288:  PUSH    32
+0028A:  MOV     W0,[W15++]
+0028C:  MOV     #2,W0
+0028E:  REPEAT  #C
+00290:  MOV     [W0++],[W15++]
+.................... {
+....................    /* call the function to read ADC value
+....................       This value is transfered to DMA buffer directly*/
+....................     read_adc(); 
+00292:  BCLR.B  320.0
+00294:  BSET.B  320.1
+00296:  BTSS.B  320.0
+00298:  BRA     296
+0029A:  BCLR.B  84.3
+0029C:  MOV     #1A,W0
+0029E:  REPEAT  #C
+002A0:  MOV     [--W15],[W0--]
+002A2:  MOV     [--W15],W0
+002A4:  POP     32
+002A6:  POP     36
+002A8:  POP     42
+002AA:  RETFIE  
+.................... }
+.................... 
+.................... 
+.................... void main() {
+*
+002E0:  MOV     #3F80,W15
+002E2:  MOV     #3FFF,W0
+002E4:  MOV     W0,20
+002E6:  NOP     
+002E8:  MOV     #4444,W0
+002EA:  MOV     W0,A4
+002EC:  BSET.B  81.7
+002EE:  BCLR.B  2C6.7
+002F0:  BSET.B  2CA.7
+002F2:  MOV     #FA0,W0
+002F4:  CALL    2AC
+002F8:  SETM    32C
+002FA:  SETM    32A
+002FC:  SETM    36C
+002FE:  SETM    36A
+.................... 
+....................    unsigned int16 value;
+....................    
+....................    setup_dma(0, DMA_IN_ADC1, DMA_WORD);
+00300:  CLR.B   381
+00302:  MOV.B   #D,W0L
+00304:  MOV.B   W0L,382
+00306:  MOV     #300,W4
+00308:  MOV     W4,388
+....................    
+....................    /*
+....................    Built-in function dma_start options are as follows -
+....................     dma_start(channel, options, buffera, bufferb, size)
+....................                // bufferb is optional depending on mode
+....................                // size is optional, if omitted the size of buffera is used
+....................                // buffers must be declared with "#bank_dma"
+.................... 
+....................    */   
+....................    dma_start(0, DMA_CONTINOUS|DMA_PING_PONG, &DMA_BUFFER_A[0], &DMA_BUFFER_B[0],BUFFER_SIZE );   
+0030A:  BCLR.B  381.7
+0030C:  MOV.B   #2,W0L
+0030E:  MOV.B   W0L,380
+00310:  MOV     #4000,W4
+00312:  MOV     W4,384
+00314:  MOV     #40C8,W4
+00316:  MOV     W4,386
+00318:  MOV     #64,W4
+0031A:  MOV     W4,38A
+0031C:  BSET.B  381.7
+....................      
+....................    
+....................    setup_port_a( sAN8 );
+0031E:  MOV     #FEFF,W4
+00320:  MOV     W4,32C
+00322:  SETM    32A
+00324:  CLR     322
+....................    setup_adc( ADC_CLOCK_INTERNAL );
+00326:  MOV     #9F00,W4
+00328:  MOV     W4,324
+0032A:  MOV     #86E0,W4
+0032C:  MOV     W4,320
+....................    set_adc_channel( 8 );
+0032E:  MOV     #8,W4
+00330:  MOV     W4,328
+....................     
+....................    
+....................    printf("\n\rSampling:");
+00332:  MOV     #0,W1
+00334:  MOV     W1,W0
+00336:  CLR.B   1
+00338:  CALL    200
+0033C:  INC     W1,W1
+0033E:  MOV     W1,[W15++]
+00340:  MOV.B   W0L,804
+00342:  CALL    2BC
+00346:  MOV     [--W15],W1
+00348:  MOV     #A,W0
+0034A:  CPSGT   W1,W0
+0034C:  BRA     334
+....................    /*Call first conversion, later conversions are called using Timer interrupt*/   
+....................    value = read_adc(); 
+0034E:  BCLR.B  320.0
+00350:  BSET.B  320.1
+00352:  BTSS.B  320.0
+00354:  BRA     352
+00356:  PUSH    300
+00358:  POP     802
+.................... 
+....................    // Sample every 1 ms, 1000 samples in 1 second to fill buffer
+....................    setup_timer1(TMR_INTERNAL ,600);
+0035A:  CLR     104
+0035C:  MOV     #258,W4
+0035E:  MOV     W4,102
+00360:  MOV     #8000,W4
+00362:  MOV     W4,104
+....................    
+....................    /* Enable the peripheral and global interrupts */
+....................    enable_interrupts(INT_TIMER1);
+00364:  BSET.B  94.3
+....................    enable_interrupts(INT_DMA0);
+00366:  BSET.B  94.4
+....................    enable_interrupts(GLOBAL);
+00368:  BCLR.B  81.7
+0036A:  CLR     42
+0036C:  BSET.B  81.7
+....................    
+....................    while (TRUE);
+0036E:  GOTO    36E
+.................... 
+.................... }
+.................... 
+00372:  PWRSAV  #0
+.................... 
+.................... void ProcessInput(unsigned int *ptr)
+*
+00218:  MOV     W5,[W15++]
+.................... {
+....................    unsigned int i, ADC_Buffer[BUFFER_SIZE];
+.................... 
+....................    for (i=0; i<BUFFER_SIZE; i++)
+0021A:  CLR     808
+0021C:  MOV     808,W4
+0021E:  MOV     #64,W3
+00220:  CP      W3,W4
+00222:  BRA     LEU,23A
+....................    {
+....................       ADC_Buffer[i]=*ptr++;      
+00224:  MOV     808,W0
+00226:  SL      W0,#1,W0
+00228:  MOV     #80A,W4
+0022A:  ADD     W0,W4,W5
+0022C:  MOV     806,W0
+0022E:  INC2    0806
+00230:  MOV     [W0],W4
+00232:  MOV     W4,[W5+#0]
+00234:  INC     0808
+00236:  GOTO    21C
+....................    }
+0023A:  MOV     [--W15],W5
+0023C:  RETURN  
+....................    //TODO: user code to process the values
+.................... }
+
+Configuration Fuses:
+   Word  1L: 00CF   NOWRTB NOBSS NORBS
+          H: 0000  
+   Word  2L: 00CF   NOWRTSS NOSSS NORSS
+          H: 0000  
+   Word  3L: 0007   NOWRT NOPROTECT
+          H: 0000  
+   Word  4L: 0082   PR IESO
+          H: 0000  
+   Word  5L: 00C2   HS OSCIO
+          H: 0000  
+   Word  6L: 005F   WPOSTS16 WPRES128 WINDIS NOWDT
+          H: 0000  
+   Word  7L: 00E7   PUT128
+          H: 0000  
+   Word  8L: 00C3   ICSP1 NOJTAG NODEBUG
+          H: 0000  

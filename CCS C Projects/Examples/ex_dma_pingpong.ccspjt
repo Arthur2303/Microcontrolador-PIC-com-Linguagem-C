@@ -1,0 +1,33 @@
+[PROJECT]
+Target=ex_dma_pingpong.hex
+Processor_Text=DSPIC33FJ128GP706
+CCSVersion=5.105Pd
+Compiler=PCD
+[Target Data]
+FileList=ex_dma_pingpong.c
+[ex_dma_pingpong.c]
+Type=4
+[mru-list]
+1=ex_dma_pingpong.c
+[Units]
+Count=1
+1=ex_dma_pingpong (main)
+
+[defines]
+buildcount=1
+
+[Opened Files]
+1=..\..\Linguagem C para Microcontrolador PIC\ContadorRegressivo.c
+t1=1
+Count=1
+
+[ProjectLog]
+Days=1
+D1=28-10-2021
+D1_L=2
+D1_L1=[36098]Stopped Editing.
+TotalEdit=6
+TotalDebug=0
+D1_E=6
+D1_D=0
+D1_L2=[36098]Project Closed.

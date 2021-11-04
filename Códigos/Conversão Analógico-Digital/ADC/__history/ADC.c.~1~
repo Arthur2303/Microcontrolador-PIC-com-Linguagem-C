@@ -1,0 +1,33 @@
+#include <18F4550.h>
+#device adc=10 // 18F4550 pode 8 ou 10 bit
+#fuses HS, NOMCLR, NOWDT
+#use delay(clock=20MHz)
+
+#include <lcd.c>
+
+void main () {
+
+   unsigned int16 valor;
+   float tensao;
+   
+   lcd_init();
+   
+   setup_adc( ADC_CLOCK_INTERNAL );
+   setup_adc_ports( AN0 );
+   set_adc_channel(0);
+   
+   while(true) {
+      valor = read_adc();
+      tensao = valor / 1023.0 * 5.0;
+      printf(LCD_PUTC, "\fValor: %lu\n", valor);
+      printf(LCD_PUTC, "Tensao: %f", tensao);
+      delay_ms(100);
+   }
+   
+   
+}
+
+
+
+
+

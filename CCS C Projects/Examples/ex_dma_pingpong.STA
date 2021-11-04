@@ -1,0 +1,52 @@
+
+ROM used:   884/88064 (1%)
+            884/88064 (1%) including unused fragments
+
+            0.7 Average locations per line
+            42.1 Average locations per statement
+
+RAM used:   532/16384 (3%) at main() level
+            737/16384 (4%) worst case
+
+Stack used: 46 worst case (4 in main + 42 for interrupts)
+Stack size: 128
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+  135    21 100  ex_dma_pingpong.c
+ 1060     0   0  ..\..\..\..\..\..\Program Files (x86)\PICC\Devices\33FJ128GP706.h
+----- -----
+ 1195    21 Total
+
+Page ROM  %  RAM    Vol Diff  Functions:
+---- --- --- ---    --- ----  ----------
+0     16   1    0             @delay_ms1
+0     36   2    1             @PUTCHAR_1_
+0     70   4    1    108  3.3  DMA0_ISR
+0     40   2    1     12  0.8  Timer_ISR
+0    148   8    3    449  4.2  MAIN
+0     24   1    0             @const901
+0     38   2  205    165  5.0  ProcessInput
+ Inline         0             @cinit1
+
+Program metrics:
+    Functions               4
+    Statements              21
+    Comments                233
+    Volume (V)              972
+    Difficulty (D)          13.0
+    Effort to implement (E) 12604
+    Time to implement (T)   12 minutes
+    Est Delivered Bugs (B)  0
+    Cyclomatic Complexity   2
+    Maintainability (MI)    82
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-001FE   508  0  
+00200-0FFFE   372  64652  
+10000-157FE     0  22528  
+
+
+

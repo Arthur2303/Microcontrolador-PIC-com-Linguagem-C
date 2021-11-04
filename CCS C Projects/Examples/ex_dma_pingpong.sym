@@ -1,0 +1,74 @@
+W0      @SCRATCH
+W0L     _RETURN_
+W0      @delay_ms1.P1
+W0      @delay_us1.P2
+W0 -W1  @READ_ROM_MEMORY.P3
+W0 -W1  @DIV3232B.P4
+W1      @SCRATCH
+W1      @READ_PACKED_MEMORY.P1
+W1      @WRITE_PACKED_MEMORY.P2
+W2      @READ_ROM_MEMORY.P1
+W2      @WRITE_PACKED_MEMORY.P2
+W2 -W3  @DIV3232B.P3
+W2      @READ_PACKED_MEMORY.P4
+W3      @WRITE_PACKED_MEMORY.P1
+W3      @READ_ROM_MEMORY.P2
+W3      @READ_PACKED_MEMORY.P3
+800.0   DMA_Buffer
+802-803 MAIN.value
+804     @PUTCHAR_1_.P1
+806-807 ProcessInput.ptr
+808-809 ProcessInput.i
+80A-8D1 ProcessInput.ADC_Buffer
+3F80-3FFF _STACK_
+4000-40C7 DMA_BUFFER_A
+40C8-418F DMA_BUFFER_B
+
+ROM Allocation:
+000200  @const901.call
+000218  ProcessInput
+00023E  DMA0_ISR
+000284  Timer_ISR
+0002AC  @delay_ms1
+0002BC  @PUTCHAR_1_
+0002E0  MAIN
+0002E0  @cinit1
+000300  @cinit2
+
+Project Directory:
+    C:\Users\arthu\OneDrive\Documentos\CCS C Projects\Examples\
+
+Project Files:
+    ex_dma_pingpong.c                                       [21-ago-18 10:07  CRC=24027EC1]
+    ..\..\..\..\..\..\Program Files (x86)\PICC\Devices\33FJ128GP706.h [12-jul-21 11:43  CRC=44AC7E34]
+
+Source signature=AD5B7B29
+Program memory checksum=0000
+Hex file CRC=840F
+
+Units:
+    C:\Users\arthu\OneDrive\Documentos\CCS C Projects\Examples\ex_dma_pingpong (main)
+
+Compiler Settings:
+    Processor:      DSPIC33FJ128GP706
+    Pointer Size:   16
+    ADC Range:      0-65535
+    Opt Level:      9
+    Short,Int,Long: SIGNED: 8,16,32
+    Float,Double:   32,64
+    Compile Mode:   CCS5
+
+Compiler operating in Evaluation Mode
+To obtain a fully enabled compiler visit www.ccsinfo.com/products
+
+Output Files:
+    XREF file:   ex_dma_pingpong.xsym
+    Errors:      ex_dma_pingpong.err
+    Ext Symbols: ex_dma_pingpong.esym
+    INHX8:       ex_dma_pingpong.hex
+    Symbols:     ex_dma_pingpong.sym
+    List:        ex_dma_pingpong.lst
+    Debug/COFF:  ex_dma_pingpong.cof
+    Project:     ex_dma_pingpong.ccspjt
+    Call Tree:   ex_dma_pingpong.tre
+    Statistics:  ex_dma_pingpong.STA

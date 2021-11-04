@@ -1,0 +1,46 @@
+/*Precisa saber o fluxo de veículos nos 5 principais cruzamentos da cidade. Para isso foi solicitado o desenvolvimento um aparelho  
+"contador de fluxo". Esse aparelho deve ser operado por uma pessoa que deve selecionar o semáforo (de 0 a 4) e pressionar um botão para incrementar em uma unidade quantos veículos
+passaram pelo semáforo selecionado. A contagem deve ser armazenada na EEPROM para que não ocorram perdas por falta de bateria ou desligamento acidental. Você deve programar este 
+dispositivo na placa 4 do Picsimab levando em consideração o seguinte. Os botões RB0 e RB1 devem ser utilizados selecionar o semáforo entre as opções de 0 à 4, onde o RB0 move a
+seleção para o semáforo anterior, caso seja maior que zero, e o RB1 move a seleção para o semáforo seguinte, caso seja menor que 4. O semáforo selecionado deve ser indicado pelos 
+LEDs B3 à B7 . Assim quando, por exemplo, semáforo 0 for selecionado o LED B3 fica aceso e os outros 4 apagados. O botão RB2 deve ser utilizado para incrementar o valor da 
+contagem de fluxo de veículos do semáforo selecionado, devendo a contagem sempre iniciar com 0. O resultado da contagem deve ser salvo na memória EEPROM do chip no mesmo endereço 
+indicado pela seleção do semáforo. Então quando o semáforo 0 for selecionado a contagem referente a ele deve ser salva na posição 0 da EEPROM; quando o semáforo 1 for selecionado 
+a contagem referente a ele deve ser salva na posição 1 da EEPROM, e assim por diante.
+Sempre que um semáforo for selecionado sua contagem deve ser apresentada no Display LCD. Considere que o valor máximo da contagem por semáforo será 200.*/
+#include <18F4550.h>
+#device adc=10
+#fuses XT, HS, NOWDT, MCLR
+
+#use delay(clock=20MHz)
+
+#define LCD_DB0   PIN_D0
+#define LCD_DB1   PIN_D1
+#define LCD_DB2   PIN_D2
+#define LCD_DB3   PIN_D3
+#define LCD_DB4   PIN_D4
+#define LCD_DB5   PIN_D5
+#define LCD_DB6   PIN_D6
+#define LCD_DB7   PIN_D7
+
+#define LCD_E     PIN_E1
+#define LCD_RS    PIN_E2
+
+#include <flex_lcd.c>//Biblioteca de configuração do display LCD
+
+int8 segmentos[] = {
+   0b00111111, 0b00000110, 0b01011011, 0b01001111,
+   0b01100110, 0b01101101, 0b01111100, 0b00000111,
+   0b01111111, 0b01100111
+};
+
+void main(){
+   
+   lcd_init();//Inicializa a biblioteca do display
+   
+   printf(LCD_PUTC, "Meu texto no LCD");//LCD_PUTC é uma referência a uma função do lcd.c
+   delay_ms(1000);
+   while(true){
+      
+   }
+}

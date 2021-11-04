@@ -1,0 +1,28 @@
+#include <18F4550.h>
+#fuses XT, NOWDT, NOMCLR
+#use delay(clock=4MHz)
+
+#INT_EXT
+void int_externa1() {
+   output_toggle(PIN_D6);
+}
+
+void main () {
+
+   enable_interrupts(GLOBAL);
+   enable_interrupts(INT_EXT);
+   
+   while(true) {
+      
+      output_toggle(PIN_D7);
+      delay_ms(3000);
+      
+   }
+
+}
+
+
+
+
+
+

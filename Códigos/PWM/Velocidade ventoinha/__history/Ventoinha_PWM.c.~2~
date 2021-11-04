@@ -1,0 +1,15 @@
+#include <18F4550.h>
+#fuses XT, MCLR, NOWDT
+#use delay(clock=4MHz)
+
+void main(){
+
+   unsigned int16 P = 50, PR2 = 124, duty;
+   
+   setup_timer_2(T2_DIV_BY_16,PR2,1);
+   setup_ccp1(CCP_PWM);//Utilizando o PWM 1
+   
+   
+}
+
+
