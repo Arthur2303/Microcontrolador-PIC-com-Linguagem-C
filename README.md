@@ -1,2 +1,5 @@
 # Microcontrolador PIC com Linguagem C
- #TRi
+
+**Códigos feitos no minicurso de Microcontrolador PIC.
+ -foijd
+
