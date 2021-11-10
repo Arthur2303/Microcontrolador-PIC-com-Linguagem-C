@@ -1,5 +1,5 @@
 #include <18F4550.h>
-#fuses INTRC, NOWDT, NOMCLR
+#fuses INTRC, NOWDT, NOMCLR // NOWDT reinicia o c√≥digo a cada travamento.
 #use delay(clock=4MHz)
 
 #use rs232(baud=9600, xmit=PIN_C6, rcv=PIN_C7)
@@ -8,10 +8,10 @@
 void serial_int() {
 
    char temp;
-   /* A funÁ„o kbhit() retorna 1 se tiver dado disponÌvel e 
-      0 se n„o tiver nenhum disponÌvel.*/
+   /* A fun√ß√£o kbhit() retorna 1 se tiver dado dispon√≠vel e 
+      0 se n√£o tiver nenhum dispon√≠vel.*/
    while( kbhit() ) {
-      temp = getc();//Faz a leitura do dado disponÌvel no buffer serial.
+      temp = getc();//Faz a leitura do dado dispon√≠vel no buffer serial.
       
       if (temp == 'L') {
          output_bit(PIN_D0, 1);
@@ -27,8 +27,8 @@ void serial_int() {
 
 void main () {
 
-   enable_interrupts(GLOBAL);//InterrupÁ„o Global.
-   enable_interrupts(INT_RDA);//InterrupÁ„o Serial.
+   enable_interrupts(GLOBAL);//Interrup√ß√£o Global.
+   enable_interrupts(INT_RDA);//Interrup√ß√£o Serial.
 
    while(true) {
    
