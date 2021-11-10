@@ -1,5 +1,5 @@
 #include <16F628A.h>
-#fuses XT
+#fuses XT // fuse/bit de configuração XT quer dizer a velocidade média do oscilador. 
 #use delay( clock=4MHz )
 
 void  main () {
